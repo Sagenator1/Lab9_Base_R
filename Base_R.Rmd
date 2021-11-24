@@ -1,0 +1,217 @@
+---
+title: "Lab9 Base R - No Packages"
+author: "Sage Davis"
+date: "11/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Objects and Classes
+
+## Vectors
+
+### Creating a Vector
+
+```{r}
+# numeric vector
+my_vector <- vector(mode = "numeric", length = 100)
+
+# logical
+my_second_vector <- vector(mode = "logical", length = 20)
+
+```
+
+### Vector Properties
+
+#### Length
+
+```{r}
+length(my_vector)
+
+length(my_second_vector)
+
+```
+
+#### Class
+
+```{r}
+
+class(my_vector)
+
+class(my_second_vector)
+
+```
+
+#### Indexing (accessing) vectors
+
+```{r}
+
+# using c to create a vector
+m_vector <- c(1:50)
+
+# what is the 1st element
+m_vector[1]
+
+# what is the last element
+m_vector[-1]
+
+# what is the 7th element
+m_vector[7]
+
+# select a range from a vector
+m_vector[3:7]
+```
+
+## Matricies
+
+### Creating Metricies
+
+```{r}
+# Create a 10 x 10 vector of NAs
+my_matrix <- matrix(data = 1:100, nrow = 20, ncol = 5)
+```
+
+### Matic Properties
+
+#### Dimensions
+
+```{r}
+# What are the dimensions
+dim(my_matrix)
+```
+
+#### Length
+
+```{r}
+# How many elements are there?
+length(my_matrix)
+```
+
+#### Class
+
+```{r}
+class(my_matrix)
+```
+
+
+#### Indexing
+
+```{r}
+my_matrix[2,]  # 1st numer is always row
+
+my_matrix[,3]  # Index a column
+
+my_matrix[8,3]  # index a cell
+
+my_matrix[8,3] <- 100000  # replace a cell
+
+my_matrix[,5] <- 10   # replace a column
+```
+
+
+# Control Flow
+
+## 'for' loops 
+
+variable (counter), sequence, expression - here - i, 1:10, print(i)
+
+```{r}
+for (i in 1:10){
+  print(i)  # replce i with "Hello World", will print 10x
+}
+```
+
+# Gemerating random numbers
+
+```{r}
+rnorm(n = 5, mean = 10, sd = 2)
+```
+
+# Let's combine all that we have learned
+
+We will use 'numeric' to create an empty vector
+we will use 'for' to iterate along items of that empty vector
+we will use '[]' to access each slot and fill-in that empty vector
+we will use 'rnorm' to sample values from the random normal distr
+we will plot the trend
+# $$ is an equation $$
+
+$$
+N_{t}=N_{t-1} + r\left{1 - frac{N_{t-1}}{K}\right}
+$$
+
+$$
+r \sim norm(\mu = 1.5, \sigma = 0.8)
+$$
+```{r}
+# set up the model parameters
+K <- 100
+nsteps <- 100
+mu <- 0.4
+sigma <- 1
+
+# set up model objets
+N <- vector(mode = "numeric", length = nsteps)
+N[1] <- 25
+
+# Model it
+for(t in 2:nsteps){
+  r <- rnorm(n = 1, mean = mu, sd = sigma)
+  N[t] <- N[t-1] + r * (1 - N[t-1] / K)
+}
+
+# Visualize
+plot(N)
+```
+# Something More
+
+We will use 'matrix' to create an empty matrix (rows are time, col are runs)
+We will repeat the process
+
+
+```{r}
+# set up the model parameters
+K <- 100
+nsteps <- 100
+mu <- 0.4
+sigma <- 1
+
+# set up model objets
+N <- matrix(data = NA, nrow = nsteps, ncol = 100)
+N[1,] <- 25
+
+# Model it
+for(t in 2:nsteps){
+  r <- rnorm(n = 100, mean = mu, sd = sigma)
+  N[t,] <- N[t-1,] + r * (1 - N[t-1,] / K)
+}
+
+# Visualize
+matplot(N, type = "l")
+```
+
+# Bring in your friends
+
+Convert it to things we know about: 'ggplot'
+
+```{r}
+library(tidyverse)
+
+# create data.frame
+my_data <- as_tibble(N) %>% 
+  mutate(time = 1:nsteps) %>% 
+  gather(run, N, -time)
+
+# visualize it
+ggplot(data = my_data, mapping = aes(x = time, y = N)) + 
+  geom_line(aes(group = run), size = 0.1, alpha = 0.2) +
+  stat_summary(geom = "line", fun = mean, color = "red") +
+  theme_bw() +
+  labs(x = "Time (years)", y = "Population size")
+
+```
+
+
